@@ -61,7 +61,6 @@ fun LeaderboardScreen() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun LeaderValue(items: List<String>, isTitle: Boolean, isFinal: Boolean, whoIsKing: String?) {
     var minWidth by remember {
@@ -71,7 +70,6 @@ private fun LeaderValue(items: List<String>, isTitle: Boolean, isFinal: Boolean,
     Column(Modifier.padding(end = 10.dp)) {
         items.forEach {
             Card(
-                onClick = {},
                 modifier =
                 (if (isTitle) Modifier.conditional(minWidth != 0.dp) { widthIn(min = minWidth) } else Modifier.width(
                     60.dp

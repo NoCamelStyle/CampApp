@@ -9,9 +9,13 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -162,20 +166,20 @@ sealed class BottomBarScreen(
 ) {
     object Songs : BottomBarScreen(
         route = "songs",
-        icon = Icons.Default.Home,
+        icon = Icons.Default.List,
         title = "Песни"
     )
 
     object Schedule : BottomBarScreen(
         route = "schedule",
-        icon = Icons.Default.Settings,
+        icon = Icons.Default.DateRange,
         title = "Расписание"
     )
 
     object Leaderboard : BottomBarScreen(
         route = "leaderboard",
-        icon = Icons.Default.Person,
-        title = "Соревнование"
+        icon = Icons.Default.ThumbUp,
+        title = "Рейтинг"
     )
 
     object Rules : BottomBarScreen(
@@ -186,7 +190,7 @@ sealed class BottomBarScreen(
 
     object GoldenPoems : BottomBarScreen(
         route = "golden_poems",
-        icon = Icons.Default.Person,
+        icon = Icons.Default.Star,
         title = "Золотые стихи"
     )
 }
