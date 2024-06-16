@@ -4,8 +4,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
@@ -19,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
@@ -46,19 +49,22 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     bottomBar = { BottomBar(navController) }
                 ) { innerPadding ->
-                    innerPadding
-                    BottomBarNavGraph(navController = navController)
+                    BottomBarNavGraph(innerPadding, navController)
                 }
             }
         }
     }
 
     @Composable
-    fun BottomBarNavGraph(navController: NavHostController) {
+    fun BottomBarNavGraph(
+        paddingValues: PaddingValues,
+        navController: NavHostController
+    ) {
 
         NavHost(
             navController = navController,
-            startDestination = BottomBarScreen.Schedule.route
+            startDestination = BottomBarScreen.Schedule.route,
+            modifier = Modifier.padding(bottom = paddingValues.calculateBottomPadding())
         ) {
             composable(route = BottomBarScreen.Songs.route) {
                 SongsListScreen()
@@ -82,7 +88,7 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun BottomBar(navController: NavHostController) {
-        var screens = listOf(
+        val screens = listOf(
             BottomBarScreen.Schedule,
             BottomBarScreen.Songs,
             BottomBarScreen.Leaderboard,
@@ -114,7 +120,10 @@ class MainActivity : ComponentActivity() {
         NavigationBarItem(
             icon = { Icon(imageVector = screen.icon, contentDescription = " NavBar Icon") },
             label = {
-                Text(text = screen.title)
+                Text(
+                    text = screen.title,
+                    textAlign = TextAlign.Center
+                )
             },
             selected = navDestination?.hierarchy?.any { it.route == screen.route } == true,
             onClick = {
