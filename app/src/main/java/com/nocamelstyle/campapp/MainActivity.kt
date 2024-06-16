@@ -25,15 +25,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.nocamelstyle.campapp.screens.golden_poems.GoldenPoemsScreen
 import com.nocamelstyle.campapp.screens.leaderboard.LeaderboardScreen
 import com.nocamelstyle.campapp.screens.rules.RulesScreen
+import com.nocamelstyle.campapp.screens.rules.allRules
+import com.nocamelstyle.campapp.screens.rules.rule.RuleScreen
 import com.nocamelstyle.campapp.screens.schedule.ScheduleScreen
 import com.nocamelstyle.campapp.screens.songs.list.SongsListScreen
+import com.nocamelstyle.campapp.screens.songs.song.SongScreen
+import com.nocamelstyle.campapp.screens.songs.songs
 import com.nocamelstyle.campapp.ui.theme.CampAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -67,14 +73,16 @@ class MainActivity : ComponentActivity() {
             modifier = Modifier.padding(bottom = paddingValues.calculateBottomPadding())
         ) {
             composable(route = BottomBarScreen.Songs.route) {
-                SongsListScreen()
+                SongsListScreen {
+                    navController.navigate("song/${it.id}")
+                }
             }
             composable(route = BottomBarScreen.Schedule.route) {
                 ScheduleScreen()
             }
             composable(route = BottomBarScreen.Rules.route) {
                 RulesScreen {
-//                    navController.navigate("rule")
+                    navController.navigate("rule/${it.id}")
                 }
             }
             composable(route = BottomBarScreen.GoldenPoems.route) {
@@ -82,6 +90,18 @@ class MainActivity : ComponentActivity() {
             }
             composable(route = BottomBarScreen.Leaderboard.route) {
                 LeaderboardScreen()
+            }
+            composable(
+                "rule/{id}",
+                arguments = listOf(navArgument("id") { type = NavType.IntType })
+            ) {
+                RuleScreen(allRules.first { rule -> rule.id == it.arguments?.getInt("id") })
+            }
+            composable(
+                "song/{id}",
+                arguments = listOf(navArgument("id") { type = NavType.IntType })
+            ) {
+                SongScreen(songs.first { song -> song.id == it.arguments?.getInt("id") })
             }
         }
     }
@@ -97,7 +117,7 @@ class MainActivity : ComponentActivity() {
         )
 
         val navBackStackEntry by navController.currentBackStackEntryAsState()
-        var currentDestination = navBackStackEntry?.destination
+        val currentDestination = navBackStackEntry?.destination
 
         NavigationBar {
             screens.forEach { screen ->

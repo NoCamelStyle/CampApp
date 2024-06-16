@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
@@ -22,7 +21,7 @@ import com.nocamelstyle.campapp.screens.songs.Song
 import com.nocamelstyle.campapp.screens.songs.songs
 
 @Composable
-fun SongsListScreen() {
+fun SongsListScreen(openSong: (Song) -> Unit) {
     var searchToken by remember {
         mutableStateOf("")
     }
@@ -35,7 +34,7 @@ fun SongsListScreen() {
         )
         LazyColumn(Modifier.weight(1f)) {
             items(songs.filter { it.song.contains(searchToken, ignoreCase = true) }) {
-                SongItem(song = it)
+                SongItem(it, openSong)
             }
         }
     }
@@ -43,9 +42,9 @@ fun SongsListScreen() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SongItem(song: Song) {
+fun SongItem(song: Song, openSong: (Song) -> Unit) {
     Card(
-        onClick = {},
+        onClick = { openSong(song) },
         modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 12.dp)
     ) {
         Text(
