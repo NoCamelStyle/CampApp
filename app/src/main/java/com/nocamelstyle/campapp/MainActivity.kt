@@ -10,15 +10,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Send
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -27,7 +25,6 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -43,6 +40,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.nocamelstyle.campapp.screens.ask.AskScreen
+import com.nocamelstyle.campapp.screens.camp_info.CampInfoScreen
 import com.nocamelstyle.campapp.screens.golden_poems.GoldenPoemsScreen
 import com.nocamelstyle.campapp.screens.leaderboard.LeaderboardScreen
 import com.nocamelstyle.campapp.screens.rules.RulesScreen
@@ -77,7 +76,7 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     private fun TopBar(navController: NavHostController) {
-        TopAppBar (
+        CenterAlignedTopAppBar (
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                 titleContentColor = MaterialTheme.colorScheme.primary,
@@ -86,15 +85,15 @@ class MainActivity : ComponentActivity() {
                 Text("")
             },
             actions = {
-                IconButton(onClick = { /* do something */ }) {
+                IconButton(onClick = { navController.navigate("ask") }) {
                     Icon(
                         imageVector = Icons.Filled.Send,
                         contentDescription = "Задать вопрос"
                     )
                 }
-                IconButton(onClick = { /* do something */ }) {
+                IconButton(onClick = { navController.navigate("about") }) {
                     Icon(
-                        imageVector = Icons.Filled.Infok,
+                        imageVector = Icons.Filled.Info,
                         contentDescription = "О лагере"
                     )
                 }
@@ -111,7 +110,7 @@ class MainActivity : ComponentActivity() {
         NavHost(
             navController = navController,
             startDestination = BottomBarScreen.Schedule.route,
-            modifier = Modifier.padding(bottom = paddingValues.calculateBottomPadding())
+            modifier = Modifier.padding(paddingValues)
         ) {
             composable(route = BottomBarScreen.Songs.route) {
                 SongsListScreen {
@@ -143,6 +142,12 @@ class MainActivity : ComponentActivity() {
                 arguments = listOf(navArgument("id") { type = NavType.IntType })
             ) {
                 SongScreen(songs.first { song -> song.id == it.arguments?.getInt("id") })
+            }
+            composable("ask") {
+                AskScreen()
+            }
+            composable("about") {
+                CampInfoScreen()
             }
         }
     }

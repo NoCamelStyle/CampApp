@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
@@ -53,7 +52,7 @@ private val goldenPoems by lazy {
 
 @Composable
 fun GoldenPoemsScreen() {
-    LazyColumn(Modifier.statusBarsPadding()) {
+    LazyColumn {
         items(goldenPoems) {
             GoldenPoem(it)
         }

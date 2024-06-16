@@ -6,14 +6,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,11 +29,11 @@ import com.nocamelstyle.campapp.ui.conditional
 
 @Composable
 fun LeaderboardScreen() {
-    Column(Modifier.systemBarsPadding()) {
-        //range picker,
+    Column {
         val columns = leaderboard.first().daysPoints.indices.map { index ->
             leaderboard.map { it.daysPoints[index].toString() }
         }
+        Spacer(modifier = Modifier.height(24.dp))
         LazyRow {
             item {
                 Spacer(modifier = Modifier.width(24.dp))
