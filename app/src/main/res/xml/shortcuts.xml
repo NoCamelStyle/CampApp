@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="id2"
+        android:enabled="true"
+        android:shortcutShortLabel="@string/shortcut_time"
+        android:shortcutLongLabel="@string/shortcut_time">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="camp://mycamp.ru/calendar"
+            android:targetPackage="com.nocamelstyle.campapp"
+            android:targetClass="com.nocamelstyle.campapp.MainActivity" />
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="id3"
+        android:enabled="true"
+        android:shortcutShortLabel="@string/shortcut_poems"
+        android:shortcutLongLabel="@string/shortcut_poems">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="camp://mycamp.ru/poems"
+            android:targetPackage="com.nocamelstyle.campapp"
+            android:targetClass="com.nocamelstyle.campapp.MainActivity" />
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="id1"
+        android:enabled="true"
+        android:shortcutShortLabel="@string/shortcut_songs"
+        android:shortcutLongLabel="@string/shortcut_songs">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="camp://mycamp.ru/songs"
+            android:targetPackage="com.nocamelstyle.campapp"
+            android:targetClass="com.nocamelstyle.campapp.MainActivity" />
+    </shortcut>
+
+</shortcuts>

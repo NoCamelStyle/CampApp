@@ -62,6 +62,14 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val startDestination = when (intent.data?.toString()?.split("/")?.last()) {
+            "songs" -> "songs"
+            "calendar" -> "schedule"
+            "poems" -> "golden_poems"
+            else -> "schedule"
+        }
+
         enableEdgeToEdge()
         setContent {
             CampAppTheme {
@@ -72,7 +80,7 @@ class MainActivity : ComponentActivity() {
                     topBar = { TopBar(navController) },
                     bottomBar = { BottomBar(navController) }
                 ) { innerPadding ->
-                    BottomBarNavGraph(innerPadding, navController)
+                    BottomBarNavGraph(startDestination, innerPadding, navController)
                 }
             }
         }
@@ -82,7 +90,7 @@ class MainActivity : ComponentActivity() {
     @Composable
     private fun TopBar(navController: NavHostController) {
         val context = LocalContext.current
-        CenterAlignedTopAppBar (
+        CenterAlignedTopAppBar(
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                 titleContentColor = MaterialTheme.colorScheme.primary,
@@ -112,7 +120,7 @@ class MainActivity : ComponentActivity() {
                 IconButton(onClick = { navController.popBackStack() }) {
                     Icon(
                         imageVector = Icons.Filled.ArrowBack,
-                        contentDescription = "О лагере"
+                        contentDescription = "Назад"
                     )
                 }
             }
@@ -121,13 +129,14 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun BottomBarNavGraph(
+        startDestination: String,
         paddingValues: PaddingValues,
         navController: NavHostController
     ) {
 
         NavHost(
             navController = navController,
-            startDestination = BottomBarScreen.Schedule.route,
+            startDestination = startDestination,
             modifier = Modifier.padding(paddingValues)
         ) {
             composable(route = BottomBarScreen.Songs.route) {
@@ -241,7 +250,7 @@ sealed class BottomBarScreen(
     object Schedule : BottomBarScreen(
         route = "schedule",
         icon = Icons.Default.DateRange,
-        title = "Расписание"
+        title = "График"
     )
 
     object Leaderboard : BottomBarScreen(
@@ -259,6 +268,6 @@ sealed class BottomBarScreen(
     object GoldenPoems : BottomBarScreen(
         route = "golden_poems",
         icon = Icons.Default.Star,
-        title = "Золотые стихи"
+        title = "Стихи"
     )
 }
