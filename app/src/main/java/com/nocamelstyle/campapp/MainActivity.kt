@@ -1,5 +1,8 @@
 package com.nocamelstyle.campapp
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -9,6 +12,7 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.List
@@ -30,6 +34,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -76,16 +81,19 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     private fun TopBar(navController: NavHostController) {
+        val context = LocalContext.current
         CenterAlignedTopAppBar (
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                 titleContentColor = MaterialTheme.colorScheme.primary,
             ),
             title = {
-                Text("")
+                Text("Лагерь 'Солнышко'")
             },
             actions = {
-                IconButton(onClick = { navController.navigate("ask") }) {
+                IconButton(onClick = {
+                    context.sendAsk()
+                }) {
                     Icon(
                         imageVector = Icons.Filled.Send,
                         contentDescription = "Задать вопрос"
@@ -94,6 +102,16 @@ class MainActivity : ComponentActivity() {
                 IconButton(onClick = { navController.navigate("about") }) {
                     Icon(
                         imageVector = Icons.Filled.Info,
+                        contentDescription = "О лагере"
+                    )
+                }
+            },
+            navigationIcon = {
+                //todo
+//                if (navController.currentBackStack.value.size > 1)
+                IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBack,
                         contentDescription = "О лагере"
                     )
                 }
@@ -199,6 +217,14 @@ class MainActivity : ComponentActivity() {
                 }
             })
     }
+}
+
+private fun Context.sendAsk() {
+    val intent = Intent(Intent.ACTION_SENDTO)
+    intent.setData(Uri.parse("mailto:andreysxkormachenko@gmail.com")) // only email apps should handle this
+    intent.putExtra(Intent.EXTRA_SUBJECT, "Вопрос")
+    intent.putExtra(Intent.EXTRA_TEXT, "Хочу узнать")
+    runCatching { startActivity(intent) }
 }
 
 sealed class BottomBarScreen(
