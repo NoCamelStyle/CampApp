@@ -13,6 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -22,9 +23,15 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import java.util.Locale
 
-
 @Composable
-fun CampInfoScreen() {
+fun CampInfoScreen(
+    phone: String,
+    location: Pair<Double, Double>,
+    items: List<String>,
+    camps: List<String>,
+    locationName: String,
+    phoneName: String
+) {
 
     val context = LocalContext.current
     val paragraphPadding = 10.dp
@@ -38,14 +45,9 @@ fun CampInfoScreen() {
         Spacer(modifier = Modifier.height(paragraphPadding))
 
         Text(text = "С собой взять:", fontWeight = FontWeight.Bold)
-        Text(
-            text = "• кепку\n" +
-                    "• шорты (ниже колен)\n" +
-                    "• Библию\n" +
-                    "• постельное\n" +
-                    "• подушку\n" +
-                    "• полотенце"
-        )
+
+        val itemsList = items.map { "• $it" }.joinToString("\n")
+        Text(text = itemsList)
 
         Spacer(modifier = Modifier.height(paragraphPadding))
 
@@ -56,37 +58,34 @@ fun CampInfoScreen() {
             shape = RectangleShape
         ) {
             Text(
-                text = "+7(900)185-80-11 (Константин)",
+                text = "$phone ($phoneName)",
                 color = Color.Black
             )
         }
         Spacer(modifier = Modifier.height(paragraphPadding))
 
         TextButton(
-            onClick = { context.openCampLocationInMapApp() },
+            onClick = { context.openCampLocationInMapApp(location.first, location.second) },
             contentPadding = PaddingValues(0.dp),
             shape = RectangleShape
         ) {
             Text(
-                text = "Лагерь проходит на базе Нива в Благодатном (нажми чтобы открыть)",
+                text = locationName,
                 color = Color.Black
             )
         }
 
         Spacer(modifier = Modifier.height(paragraphPadding))
         Text(text = "Когда проходит:", fontWeight = FontWeight.Bold)
-        Text(
-            text = "• 1 смена (11-15 лет) с 08.06-18.06\n" +
-                    "• 2 смена (11-15 лет) с 08.06-18.06\n" +
-                    "• 3 смена (11-15 лет) с 08.06-18.06\n" +
-                    "• 4 смена (11-15 лет) с 08.06-18.06\n"
-        )
+
+        val campSchedule = camps.map { "• $it" }.joinToString("\n")
+        Text(text = campSchedule)
 
     }
 }
 
-private fun Context.openCampLocationInMapApp() {
-    val uri = String.format (Locale.ENGLISH, "geo:%f,%f", 36f, 42.2f)
+private fun Context.openCampLocationInMapApp(latitude: Double, longitude: Double) {
+    val uri = String.format (Locale.ENGLISH, "geo:%f,%f", latitude.toFloat(), longitude.toFloat())
     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
     startActivity(intent)
 }

@@ -49,6 +49,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.remoteconfig.ktx.remoteConfig
+import com.google.firebase.remoteconfig.ktx.remoteConfigSettings
 import com.nocamelstyle.campapp.screens.ask.AskScreen
 import com.nocamelstyle.campapp.screens.camp_info.CampInfoScreen
 import com.nocamelstyle.campapp.screens.golden_poems.GoldenPoem
@@ -174,22 +176,30 @@ class MainActivity : ComponentActivity() {
                     result.map {
                         ScheduleItem(
                             title = it["title"] as String,
-                            timeStart = (it["startTime"] as com.google.firebase.Timestamp).toDate().let {
-                                createDate(
-                                    hoursValue = it.hours,
-                                    minutesValue = it.minutes
-                                )
-                            },
-                            timeEnd = (it["endTime"] as com.google.firebase.Timestamp).toDate().let {
-                                createDate(
-                                    hoursValue = it.hours,
-                                    minutesValue = it.minutes
-                                )
-                            }
+                            timeStart = (it["startTime"] as com.google.firebase.Timestamp).toDate()
+                                .let {
+                                    createDate(
+                                        hoursValue = it.hours,
+                                        minutesValue = it.minutes
+                                    )
+                                },
+                            timeEnd = (it["endTime"] as com.google.firebase.Timestamp).toDate()
+                                .let {
+                                    createDate(
+                                        hoursValue = it.hours,
+                                        minutesValue = it.minutes
+                                    )
+                                }
                         )
                     }
                 }
             }
+
+        val configSettings = remoteConfigSettings {
+            minimumFetchIntervalInSeconds = 3600
+        }
+        Firebase.remoteConfig.setConfigSettingsAsync(configSettings)
+        Firebase.remoteConfig.fetchAndActivate()
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -206,7 +216,11 @@ class MainActivity : ComponentActivity() {
             },
             actions = {
                 IconButton(onClick = {
-                    context.sendAsk()
+                    context.sendAsk(
+                        Firebase.remoteConfig.getString("email")
+                            .takeIf { it.isNotEmpty() }
+                            ?: "andreysxkormachenko@gmail.com"
+                    )
                 }) {
                     Icon(
                         imageVector = Icons.Filled.Send,
@@ -286,7 +300,50 @@ class MainActivity : ComponentActivity() {
                 AskScreen()
             }
             composable("about") {
-                CampInfoScreen()
+                CampInfoScreen(
+                    phone = Firebase.remoteConfig.getString("contact_phone")
+                        .takeIf { it.isNotEmpty() }
+                        ?: "+79001858010",
+
+                    location = Firebase.remoteConfig.getString("camp_location")
+                        .takeIf { it.isNotEmpty() }
+                        ?.split(";")
+                        ?.map { it.toDouble() }
+                        ?.let { Pair(it.first(), it.last()) }
+                        ?: Pair(33.7, 42.4),
+
+                    items = Firebase.remoteConfig.getString("things_list")
+                        .takeIf { it.isNotEmpty() }
+                        ?.split(",")
+                        ?.map { it.trim() }
+                        ?: listOf(
+                            "кепку",
+                            "шорты (ниже колен)",
+                            "Библию",
+                            "постельное",
+                            "подушку",
+                            "полотенце"
+                        ),
+
+                    camps = Firebase.remoteConfig.getString("camps")
+                        .takeIf { it.isNotEmpty() }
+                        ?.split(";")
+                        ?.map { it.trim() }
+                        ?: listOf(
+                            "1 смена (11-15 лет) с 08.06-18.06",
+                            "2 смена (11-15 лет) с 08.06-18.06",
+                            "3 смена (11-15 лет) с 08.06-18.06",
+                            "4 смена (11-15 лет) с 08.06-18.06"
+                        ),
+
+                    locationName = Firebase.remoteConfig.getString("location_name")
+                        .takeIf { it.isNotEmpty() }
+                        ?: "Лагерь проходит на базе Нива в Благодатном (нажми чтобы открыть)",
+
+                    phoneName = Firebase.remoteConfig.getString("phone_name")
+                        .takeIf { it.isNotEmpty() }
+                        ?: "Андрей"
+                )
             }
         }
     }
@@ -340,9 +397,9 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private fun Context.sendAsk() {
+private fun Context.sendAsk(email: String) {
     val intent = Intent(Intent.ACTION_SENDTO)
-    intent.setData(Uri.parse("mailto:andreysxkormachenko@gmail.com")) // only email apps should handle this
+    intent.setData(Uri.parse("mailto:$email")) // only email apps should handle this
     intent.putExtra(Intent.EXTRA_SUBJECT, "Вопрос")
     intent.putExtra(Intent.EXTRA_TEXT, "Хочу узнать")
     runCatching { startActivity(intent) }
