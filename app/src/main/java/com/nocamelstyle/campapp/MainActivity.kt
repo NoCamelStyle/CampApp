@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -47,43 +46,20 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.remoteconfig.ktx.remoteConfig
-import com.google.firebase.remoteconfig.ktx.remoteConfigSettings
 import com.nocamelstyle.campapp.screens.ask.AskScreen
 import com.nocamelstyle.campapp.screens.camp_info.CampInfoScreen
-import com.nocamelstyle.campapp.screens.golden_poems.GoldenPoem
 import com.nocamelstyle.campapp.screens.golden_poems.GoldenPoemsScreen
-import com.nocamelstyle.campapp.screens.golden_poems.goldenPoems
-import com.nocamelstyle.campapp.screens.leaderboard.LeaderRow
 import com.nocamelstyle.campapp.screens.leaderboard.LeaderboardScreen
-import com.nocamelstyle.campapp.screens.leaderboard.leaderboardTable
-import com.nocamelstyle.campapp.screens.rules.Rule
 import com.nocamelstyle.campapp.screens.rules.RulesScreen
-import com.nocamelstyle.campapp.screens.rules.allRules
 import com.nocamelstyle.campapp.screens.rules.rule.RuleScreen
-import com.nocamelstyle.campapp.screens.schedule.ScheduleItem
 import com.nocamelstyle.campapp.screens.schedule.ScheduleScreen
-import com.nocamelstyle.campapp.screens.schedule.createDate
-import com.nocamelstyle.campapp.screens.schedule.scheduleList
-import com.nocamelstyle.campapp.screens.songs.Song
 import com.nocamelstyle.campapp.screens.songs.list.SongsListScreen
 import com.nocamelstyle.campapp.screens.songs.song.SongScreen
-import com.nocamelstyle.campapp.screens.songs.songsDefault
 import com.nocamelstyle.campapp.ui.theme.CampAppTheme
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.update
 
 class MainActivity : ComponentActivity() {
 
-    private val db by lazy { Firebase.firestore }
-
-    private val verses = MutableStateFlow(goldenPoems)
-    private val songs = MutableStateFlow(songsDefault)
-    private val rules = MutableStateFlow(allRules)
-    private val leaderboard = MutableStateFlow(leaderboardTable)
-    private val schedule = MutableStateFlow(scheduleList)
+    private val viewModel by lazy { MainViewModel() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -109,97 +85,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-
-        db.collection("verses")
-            .get()
-            .addOnSuccessListener { result ->
-                verses.update {
-                    result.map {
-                        GoldenPoem(
-                            title = "День ${it["day"] as Long}",
-                            poem = it["value"] as String,
-                            link = it["link"] as String
-                        )
-                    }
-                }
-            }
-            .addOnFailureListener {
-                Log.e("verses", "addOnFailureListener", it)
-            }
-
-        db.collection("songs")
-            .get()
-            .addOnSuccessListener { result ->
-                songs.update {
-                    result.map {
-                        Song(
-                            title = it["title"] as String,
-                            id = System.currentTimeMillis().toInt(),
-                            song = it["song"] as String
-                        )
-                    }
-                }
-            }
-
-        db.collection("rules")
-            .get()
-            .addOnSuccessListener { result ->
-                rules.update {
-                    result.map {
-                        Rule(
-                            title = it["title"] as String,
-                            id = System.currentTimeMillis().toInt(),
-                            description = it["description"] as String,
-                            rule = it["rule"] as String
-                        )
-                    }
-                }
-            }
-
-        db.collection("leaderboard")
-            .get()
-            .addOnSuccessListener { result ->
-                leaderboard.update {
-                    result.map {
-                        LeaderRow(
-                            teamName = it["teamName"] as String,
-                            daysPoints = (it["daysPoints"] as List<Long>).map { it.toInt() }
-                        )
-                    }
-                }
-            }
-
-        db.collection("schedule")
-            .get()
-            .addOnSuccessListener { result ->
-                schedule.update {
-                    result.map {
-                        ScheduleItem(
-                            title = it["title"] as String,
-                            timeStart = (it["startTime"] as com.google.firebase.Timestamp).toDate()
-                                .let {
-                                    createDate(
-                                        hoursValue = it.hours,
-                                        minutesValue = it.minutes
-                                    )
-                                },
-                            timeEnd = (it["endTime"] as com.google.firebase.Timestamp).toDate()
-                                .let {
-                                    createDate(
-                                        hoursValue = it.hours,
-                                        minutesValue = it.minutes
-                                    )
-                                }
-                        )
-                    }
-                }
-            }
-
-        val configSettings = remoteConfigSettings {
-            minimumFetchIntervalInSeconds = 3600
-        }
-        Firebase.remoteConfig.setConfigSettingsAsync(configSettings)
-        Firebase.remoteConfig.fetchAndActivate()
+        viewModel.update()
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -216,11 +102,7 @@ class MainActivity : ComponentActivity() {
             },
             actions = {
                 IconButton(onClick = {
-                    context.sendAsk(
-                        Firebase.remoteConfig.getString("email")
-                            .takeIf { it.isNotEmpty() }
-                            ?: "andreysxkormachenko@gmail.com"
-                    )
+                    context.sendAsk(viewModel.getConfigStore().email)
                 }) {
                     Icon(
                         imageVector = Icons.Filled.Send,
@@ -254,11 +136,11 @@ class MainActivity : ComponentActivity() {
         navController: NavHostController
     ) {
 
-        val poemsList by verses.collectAsState()
-        val songsList by songs.collectAsState()
-        val rulesList by rules.collectAsState()
-        val schedulesList by schedule.collectAsState()
-        val leaderBoardList by leaderboard.collectAsState()
+        val poemsList by viewModel.verses.collectAsState()
+        val songsList by viewModel.songs.collectAsState()
+        val rulesList by viewModel.rules.collectAsState()
+        val schedulesList by viewModel.schedule.collectAsState()
+        val leaderBoardList by viewModel.leaderboard.collectAsState()
 
         NavHost(
             navController = navController,
@@ -301,48 +183,12 @@ class MainActivity : ComponentActivity() {
             }
             composable("about") {
                 CampInfoScreen(
-                    phone = Firebase.remoteConfig.getString("contact_phone")
-                        .takeIf { it.isNotEmpty() }
-                        ?: "+79001858010",
-
-                    location = Firebase.remoteConfig.getString("camp_location")
-                        .takeIf { it.isNotEmpty() }
-                        ?.split(";")
-                        ?.map { it.toDouble() }
-                        ?.let { Pair(it.first(), it.last()) }
-                        ?: Pair(33.7, 42.4),
-
-                    items = Firebase.remoteConfig.getString("things_list")
-                        .takeIf { it.isNotEmpty() }
-                        ?.split(",")
-                        ?.map { it.trim() }
-                        ?: listOf(
-                            "кепку",
-                            "шорты (ниже колен)",
-                            "Библию",
-                            "постельное",
-                            "подушку",
-                            "полотенце"
-                        ),
-
-                    camps = Firebase.remoteConfig.getString("camps")
-                        .takeIf { it.isNotEmpty() }
-                        ?.split(";")
-                        ?.map { it.trim() }
-                        ?: listOf(
-                            "1 смена (11-15 лет) с 08.06-18.06",
-                            "2 смена (11-15 лет) с 08.06-18.06",
-                            "3 смена (11-15 лет) с 08.06-18.06",
-                            "4 смена (11-15 лет) с 08.06-18.06"
-                        ),
-
-                    locationName = Firebase.remoteConfig.getString("location_name")
-                        .takeIf { it.isNotEmpty() }
-                        ?: "Лагерь проходит на базе Нива в Благодатном (нажми чтобы открыть)",
-
-                    phoneName = Firebase.remoteConfig.getString("phone_name")
-                        .takeIf { it.isNotEmpty() }
-                        ?: "Андрей"
+                    phone = viewModel.getConfigStore().phone,
+                    location = viewModel.getConfigStore().location,
+                    items = viewModel.getConfigStore().items,
+                    camps = viewModel.getConfigStore().camps,
+                    locationName = viewModel.getConfigStore().locationName,
+                    phoneName = viewModel.getConfigStore().phoneName
                 )
             }
         }
