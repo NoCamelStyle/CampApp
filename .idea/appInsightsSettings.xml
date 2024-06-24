@@ -22,10 +22,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.nocamelstyle.campapp" />
+                  <option name="mobileSdkAppId" value="1:38381715574:android:f82b60878915894b03df57" />
+                  <option name="projectId" value="qrread-c3c60" />
+                  <option name="projectNumber" value="38381715574" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

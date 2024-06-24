@@ -28,7 +28,9 @@ import androidx.compose.ui.unit.dp
 import com.nocamelstyle.campapp.ui.conditional
 
 @Composable
-fun LeaderboardScreen() {
+fun LeaderboardScreen(
+    leaderboard: List<LeaderRow>
+) {
     Column {
         val columns = leaderboard.first().daysPoints.indices.map { index ->
             leaderboard.map { it.daysPoints[index].toString() }

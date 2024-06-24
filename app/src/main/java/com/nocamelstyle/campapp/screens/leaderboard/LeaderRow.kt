@@ -9,7 +9,7 @@ data class LeaderRow(
     val allPoints get() = daysPoints.sum()
 }
 
-val leaderboard by lazy {
+val leaderboardTable by lazy {
     listOf(
         LeaderRow("Синие", listOf(getRandomValue(), getRandomValue(), getRandomValue(), getRandomValue(), getRandomValue())),
         LeaderRow("Розовые", listOf(getRandomValue(), getRandomValue(), getRandomValue(), getRandomValue(), getRandomValue())),

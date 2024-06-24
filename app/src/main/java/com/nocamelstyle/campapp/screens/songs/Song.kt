@@ -36,7 +36,7 @@ private val longSong = "Куплет 1:\n" +
         "Слово да слышится в чувствах простых: \n" +
         "Бог нас от гибели спас."
 
-val songs by lazy {
+val songsDefault: List<Song> by lazy {
     listOf(
         Song(1, "Слушайте повесть любви в простоте", longSong),
         Song(2, "Вот настал молитвы час", longSong),

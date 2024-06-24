@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -31,6 +32,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -45,20 +47,41 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import com.nocamelstyle.campapp.screens.ask.AskScreen
 import com.nocamelstyle.campapp.screens.camp_info.CampInfoScreen
+import com.nocamelstyle.campapp.screens.golden_poems.GoldenPoem
 import com.nocamelstyle.campapp.screens.golden_poems.GoldenPoemsScreen
+import com.nocamelstyle.campapp.screens.golden_poems.goldenPoems
+import com.nocamelstyle.campapp.screens.leaderboard.LeaderRow
 import com.nocamelstyle.campapp.screens.leaderboard.LeaderboardScreen
+import com.nocamelstyle.campapp.screens.leaderboard.leaderboardTable
+import com.nocamelstyle.campapp.screens.rules.Rule
 import com.nocamelstyle.campapp.screens.rules.RulesScreen
 import com.nocamelstyle.campapp.screens.rules.allRules
 import com.nocamelstyle.campapp.screens.rules.rule.RuleScreen
+import com.nocamelstyle.campapp.screens.schedule.ScheduleItem
 import com.nocamelstyle.campapp.screens.schedule.ScheduleScreen
+import com.nocamelstyle.campapp.screens.schedule.createDate
+import com.nocamelstyle.campapp.screens.schedule.scheduleList
+import com.nocamelstyle.campapp.screens.songs.Song
 import com.nocamelstyle.campapp.screens.songs.list.SongsListScreen
 import com.nocamelstyle.campapp.screens.songs.song.SongScreen
-import com.nocamelstyle.campapp.screens.songs.songs
+import com.nocamelstyle.campapp.screens.songs.songsDefault
 import com.nocamelstyle.campapp.ui.theme.CampAppTheme
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 
 class MainActivity : ComponentActivity() {
+
+    private val db by lazy { Firebase.firestore }
+
+    private val verses = MutableStateFlow(goldenPoems)
+    private val songs = MutableStateFlow(songsDefault)
+    private val rules = MutableStateFlow(allRules)
+    private val leaderboard = MutableStateFlow(leaderboardTable)
+    private val schedule = MutableStateFlow(scheduleList)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -84,6 +107,89 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
+        db.collection("verses")
+            .get()
+            .addOnSuccessListener { result ->
+                verses.update {
+                    result.map {
+                        GoldenPoem(
+                            title = "День ${it["day"] as Long}",
+                            poem = it["value"] as String,
+                            link = it["link"] as String
+                        )
+                    }
+                }
+            }
+            .addOnFailureListener {
+                Log.e("verses", "addOnFailureListener", it)
+            }
+
+        db.collection("songs")
+            .get()
+            .addOnSuccessListener { result ->
+                songs.update {
+                    result.map {
+                        Song(
+                            title = it["title"] as String,
+                            id = System.currentTimeMillis().toInt(),
+                            song = it["song"] as String
+                        )
+                    }
+                }
+            }
+
+        db.collection("rules")
+            .get()
+            .addOnSuccessListener { result ->
+                rules.update {
+                    result.map {
+                        Rule(
+                            title = it["title"] as String,
+                            id = System.currentTimeMillis().toInt(),
+                            description = it["description"] as String,
+                            rule = it["rule"] as String
+                        )
+                    }
+                }
+            }
+
+        db.collection("leaderboard")
+            .get()
+            .addOnSuccessListener { result ->
+                leaderboard.update {
+                    result.map {
+                        LeaderRow(
+                            teamName = it["teamName"] as String,
+                            daysPoints = (it["daysPoints"] as List<Long>).map { it.toInt() }
+                        )
+                    }
+                }
+            }
+
+        db.collection("schedule")
+            .get()
+            .addOnSuccessListener { result ->
+                schedule.update {
+                    result.map {
+                        ScheduleItem(
+                            title = it["title"] as String,
+                            timeStart = (it["startTime"] as com.google.firebase.Timestamp).toDate().let {
+                                createDate(
+                                    hoursValue = it.hours,
+                                    minutesValue = it.minutes
+                                )
+                            },
+                            timeEnd = (it["endTime"] as com.google.firebase.Timestamp).toDate().let {
+                                createDate(
+                                    hoursValue = it.hours,
+                                    minutesValue = it.minutes
+                                )
+                            }
+                        )
+                    }
+                }
+            }
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -134,41 +240,47 @@ class MainActivity : ComponentActivity() {
         navController: NavHostController
     ) {
 
+        val poemsList by verses.collectAsState()
+        val songsList by songs.collectAsState()
+        val rulesList by rules.collectAsState()
+        val schedulesList by schedule.collectAsState()
+        val leaderBoardList by leaderboard.collectAsState()
+
         NavHost(
             navController = navController,
             startDestination = startDestination,
             modifier = Modifier.padding(paddingValues)
         ) {
             composable(route = BottomBarScreen.Songs.route) {
-                SongsListScreen {
+                SongsListScreen(songsList) {
                     navController.navigate("song/${it.id}")
                 }
             }
             composable(route = BottomBarScreen.Schedule.route) {
-                ScheduleScreen()
+                ScheduleScreen(schedulesList)
             }
             composable(route = BottomBarScreen.Rules.route) {
-                RulesScreen {
+                RulesScreen(rulesList) {
                     navController.navigate("rule/${it.id}")
                 }
             }
             composable(route = BottomBarScreen.GoldenPoems.route) {
-                GoldenPoemsScreen()
+                GoldenPoemsScreen(poemsList)
             }
             composable(route = BottomBarScreen.Leaderboard.route) {
-                LeaderboardScreen()
+                LeaderboardScreen(leaderBoardList)
             }
             composable(
                 "rule/{id}",
                 arguments = listOf(navArgument("id") { type = NavType.IntType })
             ) {
-                RuleScreen(allRules.first { rule -> rule.id == it.arguments?.getInt("id") })
+                RuleScreen(rulesList.first { rule -> rule.id == it.arguments?.getInt("id") })
             }
             composable(
                 "song/{id}",
                 arguments = listOf(navArgument("id") { type = NavType.IntType })
             ) {
-                SongScreen(songs.first { song -> song.id == it.arguments?.getInt("id") })
+                SongScreen(songsList.first { song -> song.id == it.arguments?.getInt("id") })
             }
             composable("ask") {
                 AskScreen()

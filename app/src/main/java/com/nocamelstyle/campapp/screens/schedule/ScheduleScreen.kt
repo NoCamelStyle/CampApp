@@ -18,9 +18,11 @@ import java.util.Date
 import java.util.Locale
 
 @Composable
-fun ScheduleScreen() {
+fun ScheduleScreen(
+    schedule: List<ScheduleItem>
+) {
     LazyColumn {
-        items(scheduleList) {
+        items(schedule) {
             ScheduleView(item = it)
         }
     }

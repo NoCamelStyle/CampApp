@@ -68,7 +68,7 @@ val scheduleList by lazy {
     )
 }
 
-private fun createDate(hoursValue: Int, minutesValue: Int): Date {
+fun createDate(hoursValue: Int, minutesValue: Int): Date {
     return Date().apply {
         hours = hoursValue
         minutes = minutesValue

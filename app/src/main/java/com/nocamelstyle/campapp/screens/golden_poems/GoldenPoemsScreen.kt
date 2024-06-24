@@ -15,7 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
-private val goldenPoems by lazy {
+val goldenPoems by lazy {
     listOf(
         GoldenPoem(
             "1 день",
@@ -51,9 +51,9 @@ private val goldenPoems by lazy {
 }
 
 @Composable
-fun GoldenPoemsScreen() {
+fun GoldenPoemsScreen(poemsList: List<GoldenPoem>) {
     LazyColumn {
-        items(goldenPoems) {
+        items(poemsList) {
             GoldenPoem(it)
         }
     }

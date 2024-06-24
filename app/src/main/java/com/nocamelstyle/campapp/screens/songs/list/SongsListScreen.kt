@@ -19,10 +19,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.nocamelstyle.campapp.screens.songs.Song
-import com.nocamelstyle.campapp.screens.songs.songs
 
 @Composable
-fun SongsListScreen(openSong: (Song) -> Unit) {
+fun SongsListScreen(
+    songs: List<Song>,
+    openSong: (Song) -> Unit
+) {
     var searchToken by remember {
         mutableStateOf("")
     }
