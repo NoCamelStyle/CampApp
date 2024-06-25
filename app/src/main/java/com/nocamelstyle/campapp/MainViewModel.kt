@@ -41,6 +41,7 @@ class MainViewModel {
                             link = it["link"] as String
                         )
                     }
+                        .sortedBy { it.title }
                 }
             }
             .addOnFailureListener {
@@ -73,6 +74,7 @@ class MainViewModel {
                             rule = it["rule"] as String
                         )
                     }
+                        .sortedBy { it.title }
                 }
             }
 
@@ -112,6 +114,7 @@ class MainViewModel {
                                 }
                         )
                     }
+                        .sortedBy { it.timeStart }
                 }
             }
 
